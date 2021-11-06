@@ -1,23 +1,30 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Categories', {
+    await queryInterface.createTable('Size_tops', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      group: {
-        type: Sequelize.ENUM,
-        values: ['top', 'bottom', 'skirt', 'general'],
+      product_id: {
+        type: Sequelize.INTEGER
       },
-      name: {
+      size: {
         type: Sequelize.STRING
       },
-      is_deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      sleeve_length: {
+        type: Sequelize.INTEGER
+      },
+      body_length: {
+        type: Sequelize.INTEGER
+      },
+      body_width: {
+        type: Sequelize.INTEGER
+      },
+      deletedAt: {
+        type: Sequelize.DATE
       },
       createdAt: {
         allowNull: false,
@@ -30,6 +37,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Categories');
+    await queryInterface.dropTable('Size_tops');
   }
 };

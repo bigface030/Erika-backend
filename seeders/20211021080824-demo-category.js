@@ -7,7 +7,6 @@ module.exports = {
         id: 101,
         group: 'top',
         name: '上衣類',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -15,7 +14,6 @@ module.exports = {
         id: 102,
         group: 'top',
         name: '襯衫類',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -23,7 +21,6 @@ module.exports = {
         id: 103,
         group: 'top',
         name: '上衣/襯衫',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -31,7 +28,6 @@ module.exports = {
         id: 104,
         group: 'top',
         name: '針織衫/毛衣',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -39,7 +35,6 @@ module.exports = {
         id: 105,
         group: 'top',
         name: '洋裝類',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -47,7 +42,6 @@ module.exports = {
         id: 106,
         group: 'top',
         name: '外套類',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -55,7 +49,6 @@ module.exports = {
         id: 201,
         group: 'bottom',
         name: '褲裝類',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -63,7 +56,6 @@ module.exports = {
         id: 301,
         group: 'skirt',
         name: '裙子類',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -71,7 +63,6 @@ module.exports = {
         id: 401,
         group: 'general',
         name: '配件類',
-        is_deleted: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
