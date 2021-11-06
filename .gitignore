@@ -1,6 +1,6 @@
 .DS_store
-controllers/.DS_store
-migrations/.DS_store
+models/.DS_Store
+migrations/.DS_Store
 node_modules/
 .env
 config/
