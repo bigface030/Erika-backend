@@ -83,6 +83,104 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
+      {
+        id: 9,
+        product_id: 8,
+        size: 'M',
+        body_length: 61,
+        body_width: 52,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 10,
+        product_id: 8,
+        size: 'L',
+        body_length: 63.5,
+        body_width: 55,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 11,
+        product_id: 9,
+        size: 'M',
+        sleeve_length: 85,
+        body_length: 96,
+        body_width: 57.5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 12,
+        product_id: 9,
+        size: 'L',
+        sleeve_length: 87.5,
+        body_length: 98,
+        body_width: 59.5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 13,
+        product_id: 11,
+        size: 'M',
+        sleeve_length: 84.5,
+        body_length: 67,
+        body_width: 57.5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 14,
+        product_id: 11,
+        size: 'L',
+        sleeve_length: 87,
+        body_length: 69,
+        body_width: 60.5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 15,
+        product_id: 12,
+        size: 'M',
+        sleeve_length: 77,
+        body_length: 54,
+        body_width: 62.5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 16,
+        product_id: 12,
+        size: 'L',
+        sleeve_length: 79,
+        body_length: 56.5,
+        body_width: 65.5,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 17,
+        product_id: 13,
+        size: 'M',
+        sleeve_length: 83.5,
+        body_length: 76,
+        body_width: 53,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 18,
+        product_id: 13,
+        size: 'L',
+        sleeve_length: 86,
+        body_length: 78,
+        body_width: 56,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
     ]);
   },
 

@@ -25,6 +25,28 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
+      {
+        id: 3,
+        product_id: 10,
+        size: 'M',
+        waist: '74~82',
+        hip: 110,
+        rise: 30,
+        inseam: 70,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 4,
+        product_id: 10,
+        size: 'L',
+        waist: '80~96',
+        hip: 118,
+        rise: 34,
+        inseam: 74,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
     ]);
   },
 

@@ -123,6 +123,70 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
+      {
+        id: 16,
+        product_id: 8,
+        name: 'black',
+        code: '#212121',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 17,
+        product_id: 9,
+        name: 'khaki',
+        code: '#b8683c',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 18,
+        product_id: 9,
+        name: 'dark grey',
+        code: '#535358',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 19,
+        product_id: 10,
+        name: 'blue',
+        code: '#2b5760',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 20,
+        product_id: 11,
+        name: 'magenta',
+        code: '#d50157',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 21,
+        product_id: 12,
+        name: 'red',
+        code: '#841d13',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 22,
+        product_id: 12,
+        name: 'blue',
+        code: '#505283',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 23,
+        product_id: 13,
+        name: 'blue',
+        code: '#4c76c8',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
     ]);
   },
 

@@ -144,17 +144,6 @@ module.exports = {
       onDelete: 'restrict',
       onUpdate: 'CASCADE'
     });
-    await queryInterface.addConstraint('Stocks', {
-      fields: ['pattern_id'],
-      type: 'foreign key',
-      name: 'Stocks_pattern_id_foreign',
-      references: {
-        table: 'Patterns',
-        field: 'id'
-      },
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE'
-    });
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.removeConstraint('Products', 'Products_category_id_foreign')
@@ -170,6 +159,5 @@ module.exports = {
     await queryInterface.removeConstraint('Patterns', 'Patterns_size_skirt_id_foreign')
     await queryInterface.removeConstraint('Patterns', 'Patterns_size_general_id_foreign')
     await queryInterface.removeConstraint('Patterns', 'Patterns_color_id_foreign')
-    await queryInterface.removeConstraint('Stocks', 'Stocks_pattern_id_foreign')
   }
 };

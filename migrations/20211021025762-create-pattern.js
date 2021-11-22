@@ -26,6 +26,9 @@ module.exports = {
       color_id: {
         type: Sequelize.INTEGER
       },
+      total: {
+        type: Sequelize.INTEGER
+      },
       deletedAt: {
         type: Sequelize.DATE
       },

@@ -23,9 +23,6 @@ module.exports = (sequelize, DataTypes) => {
       Pattern.belongsTo(models.Color, {
         foreignKey: 'color_id'
       });
-      Pattern.hasMany(models.Stock, {
-        foreignKey: 'pattern_id'
-      });
     }
   };
   Pattern.init({
@@ -35,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     size_skirt_id: DataTypes.INTEGER,
     size_general_id: DataTypes.INTEGER,
     color_id: DataTypes.INTEGER,
+    total: DataTypes.INTEGER,
     deletedAt: DataTypes.DATE,
   }, {
     sequelize,

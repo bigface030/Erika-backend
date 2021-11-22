@@ -13,6 +13,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.get('/api/v1/products', productController.getProducts)
 app.get('/api/v1/products/trending', productController.getTrendingProducts)
 
 app.listen(port, () => {
