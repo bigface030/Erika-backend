@@ -14,7 +14,8 @@ app.get('/', (req, res) => {
 })
 
 app.get('/api/v1/products', productController.getProducts)
-app.get('/api/v1/products/trending', productController.getTrendingProducts)
+app.get('/api/v1/products/:id', productController.getProduct)
+app.get('/api/v1/product/trending', productController.getTrendingProducts)
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

@@ -5,64 +5,57 @@ module.exports = {
     return queryInterface.bulkInsert('Categories', [
       {
         id: 101,
-        group: 'top',
-        name: '上衣類',
+        group: 'Size_tops',
+        name: 'tops',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 102,
-        group: 'top',
-        name: '襯衫類',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 103,
-        group: 'top',
-        name: '上衣/襯衫',
+        group: 'Size_tops',
+        name: 'shirts',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 104,
-        group: 'top',
-        name: '針織衫/毛衣',
+        group: 'Size_tops',
+        name: 'knit',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 105,
-        group: 'top',
-        name: '洋裝類',
+        group: 'Size_tops',
+        name: 'one_piece',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 106,
-        group: 'top',
-        name: '外套類',
+        group: 'Size_tops',
+        name: 'outer',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 201,
-        group: 'bottom',
-        name: '褲裝類',
+        group: 'Size_bottoms',
+        name: 'bottoms',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 301,
-        group: 'skirt',
-        name: '裙子類',
+        group: 'Size_skirts',
+        name: 'skirts',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 401,
-        group: 'general',
-        name: '配件類',
+        group: 'Size_generals',
+        name: 'general',
         createdAt: new Date(),
         updatedAt: new Date()
       },

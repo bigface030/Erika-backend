@@ -17,7 +17,7 @@ module.exports = {
         product_id: 1,
         size_top_id: 1,
         color_id: 2,
-        total: 100,
+        total: 10,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -26,7 +26,7 @@ module.exports = {
         product_id: 1,
         size_top_id: 1,
         color_id: 3,
-        total: 100,
+        total: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -44,7 +44,7 @@ module.exports = {
         product_id: 1,
         size_top_id: 2,
         color_id: 2,
-        total: 100,
+        total: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -53,7 +53,7 @@ module.exports = {
         product_id: 1,
         size_top_id: 2,
         color_id: 3,
-        total: 100,
+        total: 10,
         createdAt: new Date(),
         updatedAt: new Date()
       },

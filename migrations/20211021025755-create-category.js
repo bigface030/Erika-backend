@@ -10,7 +10,7 @@ module.exports = {
       },
       group: {
         type: Sequelize.ENUM,
-        values: ['top', 'bottom', 'skirt', 'general'],
+        values: ['Size_tops', 'Size_bottoms', 'Size_skirts', 'Size_generals'],
       },
       name: {
         type: Sequelize.STRING

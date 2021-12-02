@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Category.init({
-    group: DataTypes.ENUM('top', 'bottom', 'skirt', 'general'),
+    group: DataTypes.ENUM('Size_tops', 'Size_bottoms', 'Size_skirts', 'Size_generals'),
     name: DataTypes.STRING,
     deletedAt: DataTypes.DATE,
   }, {

@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../models');
-const { Product, Image, Color, Size_top, Size_bottom, Size_skirt, Pattern } = db;
+const { Product, Category, Image, Color, Size_top, Size_bottom, Size_skirt, Size_general, Pattern } = db;
 
 const productController = {
 
@@ -104,8 +104,8 @@ const productController = {
                     is_sale: {[Op.is]: true},
                     price_sale: {
                         [Op.and]: {
-                            [Op.gt]: parseInt(_min),
-                            [Op.lt]: parseInt(_max),
+                            [Op.gte]: parseInt(_min),
+                            [Op.lte]: parseInt(_max),
                         }
                     }
                 }
@@ -113,8 +113,8 @@ const productController = {
                     is_sale: {[Op.is]: false},
                     price_standard: {
                         [Op.and]: {
-                            [Op.gt]: parseInt(_min),
-                            [Op.lt]: parseInt(_max),
+                            [Op.gte]: parseInt(_min),
+                            [Op.lte]: parseInt(_max),
                         }
                     }
                 }
@@ -142,28 +142,7 @@ const productController = {
             const page = _page ? parseInt(_page) : 1;
             const per_page = 12;
 
-            const pagination = await Product.findAll({
-                attributes: ['id', 'gender', 'name', 'price_standard', 'price_sale', 'is_sale', 'sold'],
-                include: [{
-                    model: Image,
-                    attributes: ['src', 'alt'],
-                    where: {
-                        product_id: Sequelize.col('Product.id'),
-                        is_main: 1,
-                    },
-                }],
-                where: Obj,
-                order: Arr,
-            }).then(data => (
-                {
-                    page,
-                    per_page,
-                    total_count: data.length,
-                    page_count: parseInt(data.length / per_page) + 1,
-                }       
-            ))
-
-            const data = await Product.findAll({
+            const data = await Product.findAndCountAll({
                 attributes: ['id', 'gender', 'name', 'price_standard', 'price_sale', 'is_sale', 'sold'],
                 include: [{
                     model: Image,
@@ -178,12 +157,109 @@ const productController = {
                 offset: per_page * (page - 1),
                 limit: per_page,
             })
+                .then(data => {
+                    data.per_page = per_page
+                    data.page = page
+                    data.page_count = parseInt(data.count/per_page+1)
+                    return data
+                })
 
-            return { pagination, data }
+            return data
         }
         getProducts()
         .then(data => {
-            if(!data.pagination.total_count) return res.status(400).json(data)
+            if(!data.count) return res.status(400).json(data)
+            return res.status(200).json(data)
+        })
+        .catch(err => {
+            return res.status(500).json(err)
+        })
+    },
+
+    getProduct: (req, res) => {
+
+        const { id } = req.params;
+
+        const getGroup = async () => {
+            return Product.findOne({
+                attributes: ['category_id'],
+                where: {
+                    id
+                }
+            }).then(data => {
+                return Category.findOne({
+                    attributes: ['group'],
+                    where: {
+                        id: data.category_id
+                    }
+                }).then(data => data.group)
+            })
+        }
+        // getGroup().then(data => console.log(data))
+
+        const getProduct = async () => {
+
+            const group = await getGroup()
+            const model_ID = [group.split('_')[0].toLowerCase(), group.split('_')[1].slice(0, -1), 'id'].join('_')
+            const model = db[group.slice(0, -1)]
+
+            const productQuery = await Product.findOne({
+                attributes: { exclude: ['category_id']},
+                include: [{
+                    model: Category,
+                    attributes: ['id', 'group', 'name'],
+                    where: {
+                        id: Sequelize.col(`Product.category_id`)
+                    }
+                },{
+                    model,
+                    attributes: { exclude: ['product_id', 'deletedAt', 'createdAt', 'updatedAt'] },
+                    where: {
+                        product_id: id,
+                    },
+                }, {
+                    model: Color,
+                    attributes: ['id', 'name', 'code'],
+                    where: {
+                        product_id: id,
+                    }
+                }, {
+                    model: Image,
+                    attributes: ['id', 'src', 'alt', 'is_main'],
+                    where: {
+                        product_id: id,
+                    }
+                }],
+                where: {
+                    id
+                }
+            })
+
+            const patternQuery = await Pattern.findAll({
+                attributes: ['id', 'total'],
+                include: [{
+                    model, 
+                    attributes: ['size'],
+                    where: {
+                        id: Sequelize.col(`Pattern.${model_ID}`)
+                    }
+                }, {
+                    model: Color,
+                    attributes: ['name', 'code'],
+                    where: {
+                        id: Sequelize.col('Pattern.color_id')
+                    }
+                }],
+                where: {
+                    product_id: id,
+                }
+            })
+
+            return {product: productQuery, patterns: patternQuery}
+        }
+        getProduct()
+        .then(data => {
+            if(!data) return res.status(400).json(data)
             return res.status(200).json(data)
         })
         .catch(err => {
