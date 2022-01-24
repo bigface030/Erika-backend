@@ -39,7 +39,7 @@ module.exports = {
       },
       is_on: {
         type: Sequelize.BOOLEAN,
-        defaultValue: true,
+        defaultValue: false,
       },
       is_sale: {
         type: Sequelize.BOOLEAN,
