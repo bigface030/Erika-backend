@@ -5,22 +5,24 @@ const { Product, Category, Image, Color, Size_top, Size_bottom, Size_skirt, Size
 const productController = {
 
     getProducts: (req, res) => {
+
         const { gender, category } = req.query;
         const { _color, _size, _min, _max, _order, _page, _is_on, _is_sale } = req.query;
-        const getColors = async () => {
+
+        const getColors = () => {
             if(_color){
-                const colorArray = await Color.findAll({
+                return Color.findAll({
                     attributes: ['id'],
                     where: {
                         name: _color,
                     }
                 })
                     .then(colors => colors.map(color => color.id))
-                return colorArray
             }
             return []
         }
         // getColors().then(data => console.log(data))
+
         const getSizes = async () => {
             if(_size){
                 const sizeTops = await Size_top.findAll({
@@ -58,6 +60,7 @@ const productController = {
 
         const getPatterns = async () => {
             const Op = Sequelize.Op;
+
             const colors = await getColors();
             const sizes = await getSizes();
 
@@ -69,9 +72,8 @@ const productController = {
             if(sizes.length > 0){
                 Obj[Op.or] = sizes
             }
-            // console.log(Obj)
 
-            return await Pattern.findAll({
+            return Pattern.findAll({
                 attributes: ['product_id'],
                 where: Obj
             })
@@ -119,40 +121,49 @@ const productController = {
                 }
                 Obj[Op.or] = [onArr, offArr]
             }
-            if(_is_on){
-                if(_is_on === '1'){
-                    Obj.is_on = {[Op.is]: true};
+            switch (_is_on) {
+                case '1': {
+                    Obj.is_on = {[Op.is]: true}
+                    break
                 }
-                if(_is_on === '0'){
-                    Obj.is_on = {[Op.is]: false};
+                case '0': {
+                    Obj.is_on = {[Op.is]: false}
+                    break
                 }
+                default: break
             }
-            if(_is_sale){
-                if(_is_sale === '1'){
-                    Obj.is_sale = {[Op.is]: true};
+            switch (_is_sale) {
+                case '1': {
+                    Obj.is_sale = {[Op.is]: true}
+                    break
                 }
-                if(_is_sale === '0'){
-                    Obj.is_sale = {[Op.is]: false};
+                case '0': {
+                    Obj.is_sale = {[Op.is]: false}
+                    break
                 }
+                default: break
             }
             // console.log(Obj)
 
             const Arr = [];
-            if(_order){
-                switch (_order) {
-                    case '1':
-                        Arr.push(['price_standard', 'DESC']);
-                        break;
-                    case '2':
-                        Arr.push(['price_standard', 'ASC']);
-                        break;
-                    case '3':
-                        Arr.push(['sold', 'DESC']);
-                        break;
-                    case '4':
-                        Arr.push(['sold', 'ASC']);
-                        break;
+            switch (_order) {
+                case '1': {
+                    Arr.push(['price_standard', 'DESC'])
+                    break
                 }
+                case '2': {
+                    Arr.push(['price_standard', 'ASC'])
+                    break
+                }
+                case '3': {
+                    Arr.push(['sold', 'DESC'])
+                    break
+                }
+                case '4': {
+                    Arr.push(['sold', 'ASC'])
+                    break
+                }
+                default: break
             }
             Arr.push(['id', 'ASC']);
             // console.log(Arr)
@@ -162,7 +173,7 @@ const productController = {
 
             if (page) {
                 Obj.is_on = {[Op.is]: true};
-                return await Product.findAndCountAll({
+                return Product.findAndCountAll({
                     attributes: ['id', 'gender', 'name', 'price_standard', 'price_sale', 'is_sale', 'sold'],
                     include: [{
                         model: Image,
@@ -177,14 +188,15 @@ const productController = {
                     offset: per_page * (page - 1),
                     limit: per_page,
                 })
-                    .then(data => {
-                        data.per_page = per_page
-                        data.page = page
-                        data.page_count = Math.ceil(data.count/per_page)
-                        return data
-                    })
+                    .then(data => ({
+                        count: data.count,
+                        per_page,
+                        page,
+                        page_count: Math.ceil(data.count/per_page),
+                        rows: data.rows
+                    }))
             } else {
-                return await Product.findAll({
+                return Product.findAll({
                     attributes: ['id', 'gender', 'name', 'price_standard', 'price_sale', 'is_on', 'is_sale', 'sold', 'createdAt', 'updatedAt'],
                     include: [{
                         model: Image,
@@ -200,14 +212,15 @@ const productController = {
                     .then(data => data)                
             }
         }
+
         getProducts()
-        .then(data => {
-            if(!data) return res.status(400).json(data)
-            return res.status(200).json(data)
-        })
-        .catch(err => {
-            return res.status(500).json(err)
-        })
+            .then(data => {
+                if(!data) return res.status(400).json(data)
+                return res.status(200).json(data)
+            })
+            .catch(err => {
+                return res.status(500).json(err)
+            })
     },
 
     getProduct: (req, res) => {
