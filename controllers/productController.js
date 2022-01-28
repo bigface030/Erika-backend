@@ -76,9 +76,9 @@ const productController = {
             return Pattern.findAll({
                 attributes: ['product_id'],
                 where: Obj
-            })
-            .then(patterns => patterns.map(pattern => pattern.product_id))
-            .then(data => (
+            }).then(patterns => (
+                patterns.map(pattern => pattern.product_id)
+            )).then(data => (
                 data.filter((value, index) => (
                     data.indexOf(value) === index
                 ))
@@ -187,14 +187,13 @@ const productController = {
                     order: Arr,
                     offset: per_page * (page - 1),
                     limit: per_page,
-                })
-                    .then(data => ({
-                        count: data.count,
-                        per_page,
-                        page,
-                        page_count: Math.ceil(data.count/per_page),
-                        rows: data.rows
-                    }))
+                }).then(data => ({
+                    count: data.count,
+                    per_page,
+                    page: data.count ? page : 0,
+                    page_count: Math.ceil(data.count/per_page),
+                    rows: data.rows
+                }))
             } else {
                 return Product.findAll({
                     attributes: ['id', 'gender', 'name', 'price_standard', 'price_sale', 'is_on', 'is_sale', 'sold', 'createdAt', 'updatedAt'],
@@ -208,26 +207,20 @@ const productController = {
                     }],
                     where: Obj,
                     order: Arr,
-                })
-                    .then(data => data)                
+                }).then(data => data)
             }
         }
 
         getProducts()
-            .then(data => {
-                if(!data) return res.status(400).json(data)
-                return res.status(200).json(data)
-            })
-            .catch(err => {
-                return res.status(500).json(err)
-            })
+            .then(data => res.status(200).json(data))
+            .catch(err => res.status(500).json(err))
     },
 
     getProduct: (req, res) => {
 
         const { id } = req.params;
 
-        const getGroup = async () => {
+        const getGroup = () => {
             return Product.findOne({
                 attributes: ['category_id'],
                 where: {
@@ -245,6 +238,12 @@ const productController = {
         // getGroup().then(data => console.log(data))
 
         const getProduct = async () => {
+
+            const isValid = await Product.findByPk(id).then(product => {
+                if(product === null) return false
+                return true
+            })
+            if(!isValid) return Promise.reject(new ReferenceError('invalid product id'))
 
             const group = await getGroup()
             const model_ID = [group.split('_')[0].toLowerCase(), group.split('_')[1].slice(0, -1), 'id'].join('_')
@@ -279,9 +278,7 @@ const productController = {
                         product_id: id,
                     }
                 }],
-                where: {
-                    id
-                }
+                where: { id }
             })
 
             const patternQuery = await Pattern.findAll({
@@ -306,39 +303,11 @@ const productController = {
 
             return {product: productQuery, patterns: patternQuery}
         }
-        getProduct()
-        .then(data => {
-            if(!data) return res.status(400).json(data)
-            return res.status(200).json(data)
-        })
-        .catch(err => {
-            return res.status(500).json(err)
-        })
-    },
 
-    getTrendingProducts: (req, res) => {
-        Product.findAll({
-            attributes: ['id', 'gender', 'name', 'price_standard', 'price_sale', 'is_sale', 'sold'],
-            include: [{
-                model: Image,
-                attributes: ['src', 'alt'],
-                where: {
-                    product_id: Sequelize.col('Product.id'),
-                    is_main: 1,
-                },
-            }],
-            where: {
-                is_on: 1,
-            },
-            order: [
-                ['sold', 'DESC']
-            ]
-        })
-            .then(data => {
-                if(!data.length) return res.status(400).json(data)
-                return res.status(200).json(data)
-            })
+        getProduct()
+            .then(data => res.status(200).json(data))
             .catch(err => {
+                if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
                 return res.status(500).json(err)
             })
     },
@@ -347,7 +316,7 @@ const productController = {
 
         const { name, gender, category, desc, material, washing, images, group, sizes, colors, patterns, is_on, is_sale, price_standard, price_sale } = req.body;
 
-        const createProduct = async () => {
+        const addProduct = async () => {
 
             const category_id = await Category.findOne({
                 attributes: ['id'],
@@ -429,18 +398,19 @@ const productController = {
             }))
         }
 
-
-        createProduct()
-        .then(([product, created]) => {
-            if(!created) return res.status(400).json(product)
-            addImage(product)
-            if(sizes && colors){
-                addPatterns(product)
-            }
-            return res.status(200).json(product)
-        })
-        .catch(err => res.status(500).json(err))
-
+        addProduct()
+            .then(([product, created]) => {
+                if(!created) return new Error('name already be used')
+                addImage(product)
+                if(sizes && colors){
+                    addPatterns(product)
+                }
+                return res.status(201).json(product)
+            })
+            .catch(err => {
+                if(err.message === 'name already be used') return res.status(409).json(`${err.name}: ${err.message}`)
+                res.status(500).json(err)
+            })
     },
 
     updateProduct: (req, res) => {
@@ -613,20 +583,63 @@ const productController = {
                 return res.status(200).json(data)
             })
             .catch(err => {
-                if(err.message === 'name already be used') return res.status(403).json(`${err.name}: ${err.message}`)
+                if(err.message === 'name already be used') return res.status(409).json(`${err.name}: ${err.message}`)
                 if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
                 return res.status(500).json(err)
             })
 
     },
 
-    updatePattern: (req, res) => {
-        const { id } = req.params;
+    deleteProduct: (req, res) => {
 
+        const { id } = req.params
+
+        Product.findByPk(id)
+            .then(product => {
+                if(product === null) return Promise.reject(new ReferenceError('invalid product id'))
+            })
+            .then(() => {
+                return Pattern.destroy({
+                    where: { product_id: id }
+                }).then(() => {
+                    return Product.destroy({
+                        where: { id }
+                    }).then(() => (
+                        res.sendStatus(204)
+                    ))
+                })
+            })
+            .catch(err => {
+                if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
+                return res.status(500).json(err)
+            })
+
+    },
+
+    searchProduct: (req, res) => {
+
+        const { name } = req.query
+
+        Product.findOne({
+            where: { name }
+        })
+            .then(data => {
+                if(!data) throw new ReferenceError('cannot find product')
+                return res.status(200).json(data)
+            })
+            .catch(err => {
+                if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
+                return res.status(500).json(err)
+            })
+    },
+
+    updatePattern: (req, res) => {
+
+        const { id } = req.params;
         const { type, quantity } = req.body;
 
-        const getTotal = async () => {
-            return await Pattern.findOne({
+        const getTotal = () => {
+            return Pattern.findOne({
                 where: { id }
             }).then(pattern => {
                 if(pattern === null) return null
@@ -643,53 +656,17 @@ const productController = {
                 total: total + qty
             }, {
                 where: { id }
-            }).then(() => ({id, total: total + qty}))
+            })
         }
 
         updatePattern()
-        .then(data => res.status(200).json(data))
-        .catch(err => {
-            if(err instanceof RangeError) return res.status(403).json(`${err.name}: ${err.message}`)
-            if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
-            return res.status(500).json(err)
-        })
-    },
-
-    deleteProduct: (req, res) => {
-        const { id } = req.params
-
-        Product.findByPk(id).then(product => {
-            if(product === null) return Promise.reject(new ReferenceError('invalid product id'))
-        })
-        .then(() => {
-            return Pattern.destroy({
-                where: { product_id: id }
-            }).then(() => {
-                return Product.destroy({
-                    where: { id }
-                }).then(() => res.status(200).json({ok: true}))
+            .then(() => res.sendStatus(200))
+            .catch(err => {
+                if(err instanceof RangeError) return res.status(403).json(`${err.name}: ${err.message}`)
+                if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
+                return res.status(500).json(err)
             })
-        })
-        .catch(err => {
-            if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
-            return res.status(500).json(err)
-        })
-
     },
-
-    searchProduct: (req, res) => {
-        const { name } = req.query;
-        Product.findOne({
-            where: { name }
-        })
-        .then(data => {
-            if(!data) return res.status(400).json(data)
-            return res.status(200).json(data)
-        })
-        .catch(err => {
-            return res.status(500).json(err)
-        })
-    }
 };
 
 module.exports = productController;

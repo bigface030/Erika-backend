@@ -23,7 +23,6 @@ app.get('/api/v1/products/:id', productController.getProduct)
 app.patch('/api/v1/products/:id', productController.updateProduct)
 app.delete('/api/v1/products/:id', productController.deleteProduct)
 app.get('/api/v1/product/search', productController.searchProduct)
-app.get('/api/v1/product/trending', productController.getTrendingProducts)
 app.patch('/api/v1/product/patterns/:id', productController.updatePattern)
 
 
