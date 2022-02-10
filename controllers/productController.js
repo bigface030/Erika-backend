@@ -20,7 +20,6 @@ const productController = {
             }
             return []
         }
-        // getColors().then(data => console.log(data))
 
         const getSizes = async () => {
             if(_size){
@@ -55,7 +54,6 @@ const productController = {
             }
             return []
         }
-        // getSizes().then(data => console.log(data))
 
         const getPatterns = async () => {
             const Op = Sequelize.Op;
@@ -64,7 +62,9 @@ const productController = {
             const sizes = await getSizes();
 
             const Obj = {};
-            Obj.total = {[Op.gt]: 0};
+            if(_page){
+                Obj.total = {[Op.gt]: 0};
+            }
             if(colors.length > 0){
                 Obj.color_id = {[Op.or]: colors}
             }
@@ -83,7 +83,6 @@ const productController = {
                 ))
             ))
         }
-        // getPatterns().then(data => console.log(data))
 
         const getProducts = async () => {
             const Op = Sequelize.Op;
@@ -102,7 +101,7 @@ const productController = {
                 }).then(data => data.id)
                 Obj.category_id = category_id
             }
-            if(patterns.length > 0){
+            if(_page && patterns.length > 0){
                 Obj.id = {[Op.or]: patterns}
             }
             if(_min && _max){
@@ -148,7 +147,6 @@ const productController = {
                 }
                 default: break
             }
-            // console.log(Obj)
 
             const Arr = [];
             switch (_order) {
@@ -171,7 +169,6 @@ const productController = {
                 default: break
             }
             Arr.push(['id', 'ASC']);
-            // console.log(Arr)
 
             const page = _page ? parseInt(_page) : null;
             const per_page = 12;
@@ -240,7 +237,6 @@ const productController = {
                 }).then(data => data.group)
             })
         }
-        // getGroup().then(data => console.log(data))
 
         const getProduct = async () => {
 
@@ -331,6 +327,15 @@ const productController = {
 
         const addProduct = async () => {
 
+            if(!category) return missParam('category')
+            const category_id = await Category.findOne({
+                attributes: ['id'],
+                where: {
+                    name: category
+                }
+            })
+            if(!category_id) return invalidParam('category')
+
             const missParam = param => {
                 return Promise.resolve([undefined, undefined, new TypeError(`miss '${param}' parameter`)])
             }
@@ -344,25 +349,15 @@ const productController = {
             }
 
             if(!name) return missParam('name')
-            if(!category) return missParam('category')
-
+            
             if (images && images.length > 0) {
                 const error = !images.every(image => image.src && image.alt)
                 if(error) return missProperty('images')
             } else {
                 return missParam('images')
             }
-
+            
             if(gender && gender !== 'M' && gender !== 'F') return invalidParam('gender')
-
-            const category_id = await Category.findOne({
-                attributes: ['id'],
-                where: {
-                    name: category
-                }
-            })
-
-            if(!category_id) return invalidParam('category')
 
             if (sizes && sizes.length > 0) {
                 const error = !sizes.every(size => size.size)
@@ -474,14 +469,11 @@ const productController = {
 
         const addAll = async () => {
             const [product, created, error] = await addProduct()
-            if(error){
-                return Promise.reject(error)
-            }
+            if(error) return Promise.reject(error)
             if(!created) return Promise.reject(new Error('name already be used'))
             const addedImages = await addImages(product)
             const addedSizes = await addSizes(product)
             const addedColors = await addColors(product)
-            console.log(addedColors)
             const addedPatterns = await addPatterns(addedSizes, addedColors, product)
             return Promise.resolve({
                 ...product.toJSON(), 
@@ -506,16 +498,19 @@ const productController = {
 
         const { id } = req.params;
 
-        const { name, gender, category, desc, material, washing, images, sizes, colors, group, is_on, is_sale, price_standard, price_sale } = req.body;
+        const { name, gender, desc, material, washing, images, sizes, colors, is_on, is_sale, price_standard, price_sale } = req.body;
 
+        const isError = async () => {
 
-        const updateProduct = async () => {
+            const invalidParam = param => {
+                return Promise.resolve(new ReferenceError(`invalid '${param}' parameter`))
+            }
 
             const isValid = await Product.findByPk(id).then(product => {
                 if(product === null) return false
                 return true
             })
-            if(!isValid) return Promise.reject(new ReferenceError('invalid product id'))
+            if(!isValid) return Promise.resolve(new ReferenceError('invalid product id'))
 
             if(name){
                 const isUnique = await Product.findOne({
@@ -524,42 +519,54 @@ const productController = {
                     if(product && product.id !== parseInt(id)) return false
                     return true
                 })
-                if(!isUnique) return Promise.reject(new Error('name already be used'))
+                if(!isUnique) return Promise.resolve(new Error('name already be used'))
             }
 
-            const obj = name ? {
-                gender,
+            if(gender && gender !== 'M' && gender !== 'F') return invalidParam('gender')
+
+            return Promise.resolve(null)
+
+        }
+
+        const getGroup = () => {
+            return Product.findByPk(id).then(product => {
+                return Category.findOne({
+                    where: {
+                        id: product.category_id
+                    }
+                }).then(data => data.group.slice(0, -1))
+            })
+        }
+
+        const updateProduct = () => {
+            return Product.update({
                 name,
+                gender,
                 desc,
                 material,
                 washing,
-            } : {
                 is_on, 
                 is_sale, 
                 price_standard, 
                 price_sale
-            }
-
-            return Product.update(obj, {
+            }, {
                 where: { id }
-            }).then(() => ({id, ...obj}))
-            
+            })
         }
-
 
         const updateImages = () => {
             images.filter(image => image.id || image.src)
-                .map((image, i) => !image.id ? (
+                .map(image => !image.id ? (
                     Image.create({
                         product_id: id,
                         src: image.src,
-                        alt: `${name}_0${i+1}`,
+                        alt: image.alt || null,
                         is_main: 0
                     })
                 ) : image.src ? (
                     Image.update({
                         src: image.src,
-                        alt: `${name}_0${i+1}`
+                        alt: image.alt || null,
                     }, {
                         where: {
                             id: image.id
@@ -572,87 +579,119 @@ const productController = {
                         }
                     })
                 ))
+            return Promise.resolve(true)
         }
 
+        const updateSizes = async () => {
+            const group = await getGroup()
+            const model = db[group]
 
-        const updateSizes = () => {
-            switch (group) {
-                case 'Size_top': {
-                    return Promise.all(sizes.map(async size => size.id ? (
-                        await Size_top.update(size, {
-                            where: {
-                                id: size.id
-                            }
-                        }).then(() => size.id)
-                    ) : (
-                        await Size_top.create({
-                            ...size, 
-                            product_id: id,
-                        }).then(result => result.id)
-                    )))
-                }
-                case 'Size_bottom': {
-                    return Promise.all(sizes.map(async size => size.id ? (
-                        await Size_bottom.update({
-                            ...size,
-                            waist: size.waist.join('~')
-                        }, {
-                            where: {
-                                id: size.id
-                            }
-                        }).then(() => size.id)
-                    ) : (
-                        await Size_bottom.create({
-                            ...size, 
-                            product_id: id, 
-                            waist: size.waist.join('~')
-                        }).then(result => result.id)
-                    )))
-                }
-                case 'Size_skirt': {
-                    return Promise.all(sizes.map(async size => size.id ? (
-                        await Size_skirt.update({
-                            ...size,
-                            waist: size.waist.join('~')
-                        }, {
-                            where: {
-                                id: size.id
-                            }
-                        }).then(() => size.id)
-                    ) : (
-                        await Size_skirt.create({
-                            ...size, 
-                            product_id: id, 
-                            waist: size.waist.join('~')
-                        }).then(result => result.id)
-                    )))
-                }
-                default: break
-            }
-        }
-
-        const updateColors = () => {
-            return Promise.all(colors.map(async color => color.id ? (
-                await Color.update(color, {
-                    where: {
-                        id: color.id
+            const updateSizes = () => {
+                if(!sizes) return Promise.resolve(true)
+                switch (group) {
+                    case 'Size_top': {
+                        return Promise.all(sizes.map(async size => size.id ? (
+                            await Size_top.update(size, {
+                                where: {
+                                    id: size.id,
+                                    product_id: id
+                                }
+                            })
+                        ) : (
+                            await Size_top.create({
+                                ...size, 
+                                product_id: id,
+                            })
+                        )))
                     }
-                }).then(() => color.id)
-            ) : (
-                await Color.create({
-                    ...color,
-                    product_id: id
-                }).then(result => result.id)
-            )))
+                    case 'Size_bottom': {
+                        return Promise.all(sizes.map(async size => size.id ? (
+                            await Size_bottom.update({
+                                ...size,
+                                waist: size.waist.join('~')
+                            }, {
+                                where: {
+                                    id: size.id,
+                                    product_id: id
+                                }
+                            })
+                        ) : (
+                            await Size_bottom.create({
+                                ...size, 
+                                product_id: id, 
+                                waist: size.waist.join('~')
+                            })
+                        )))
+                    }
+                    case 'Size_skirt': {
+                        return Promise.all(sizes.map(async size => size.id ? (
+                            await Size_skirt.update({
+                                ...size,
+                                waist: size.waist.join('~')
+                            }, {
+                                where: {
+                                    id: size.id,
+                                    product_id: id
+                                }
+                            })
+                        ) : (
+                            await Size_skirt.create({
+                                ...size, 
+                                product_id: id, 
+                                waist: size.waist.join('~')
+                            })
+                        )))
+                    }
+                    default: break
+                }
+            }
+
+            return updateSizes().then(() => {
+                return model.findAll({
+                    where: {
+                        product_id: id
+                    }
+                }).then(results => {
+                    return results.map(result => result.id)
+                })
+            })
         }
 
-        const updatePatterns = async () => {
-            const sizeIDs = await updateSizes()
-            const colorIDs = await updateColors()
+        const updateColors = async () => {
+            const updateColors = () => {
+                if(!colors) return Promise.resolve(true)
+                return Promise.all(colors.map(async color => color.id ? (
+                    await Color.update(color, {
+                        where: {
+                            id: color.id,
+                            product_id: id
+                        }
+                    })
+                ) : (
+                    await Color.create({
+                        ...color,
+                        product_id: id
+                    })
+                )))
+            }
 
+            return updateColors().then(() => {
+                return Color.findAll({
+                    where: {
+                        product_id: id
+                    }
+                }).then(results => {
+                    return results.map(result => result.id)
+                })
+            })
+        }
+
+        const updatePatterns = async (sizeIDs, colorIDs) => {
+
+            const group = await getGroup()
             const model_ID = [group.split('_')[0].toLowerCase(), group.split('_')[1], 'id'].join('_')
 
-            return await sizeIDs.map(sizeID => colorIDs.map(colorID => {
+            return sizeIDs.map(sizeID => colorIDs.map(colorID => {
                 const obj = {
                     product_id: id,
                     color_id: colorID
@@ -665,15 +704,85 @@ const productController = {
             }))
         }
 
-        updateProduct()
-            .then(data => {
-                if(images) updateImages()
-                if(sizes && colors) updatePatterns()
-                return res.status(200).json(data)
+        const getProduct = async () => {
+            const group = await getGroup()
+            const model_ID = [group.split('_')[0].toLowerCase(), group.split('_')[1], 'id'].join('_')
+            const model = db[group]
+
+            const productQuery = await Product.findOne({
+                attributes: { exclude: ['category_id']},
+                include: [{
+                    model: Category,
+                    attributes: ['id', 'group', 'name'],
+                    where: {
+                        id: Sequelize.col(`Product.category_id`)
+                    }
+                },{
+                    model,
+                    attributes: { exclude: ['product_id', 'deletedAt', 'createdAt', 'updatedAt'] },
+                    where: {
+                        product_id: id,
+                    },
+                    required: false
+                }, {
+                    model: Color,
+                    attributes: ['id', 'name', 'code'],
+                    where: {
+                        product_id: id,
+                    },
+                    required: false
+                }, {
+                    model: Image,
+                    attributes: ['id', 'src', 'alt', 'is_main'],
+                    where: {
+                        product_id: id,
+                    }
+                }],
+                where: { id }
             })
+
+            const patternQuery = await Pattern.findAll({
+                attributes: ['id', 'total', 'createdAt', 'updatedAt'],
+                include: [{
+                    model, 
+                    attributes: ['size'],
+                    where: {
+                        id: Sequelize.col(`Pattern.${model_ID}`)
+                    }
+                }, {
+                    model: Color,
+                    attributes: ['name', 'code'],
+                    where: {
+                        id: Sequelize.col('Pattern.color_id')
+                    }
+                }],
+                where: {
+                    product_id: id,
+                }
+            })
+
+            return {product: productQuery, patterns: patternQuery}
+        }
+
+        const updateAll = async () => {
+            const error = await isError()
+            if(error) return Promise.reject(error)
+
+            await updateProduct()
+            if(images) await updateImages()
+            const sizeIDs = await updateSizes()
+            const colorIDS = await updateColors()
+            if(sizes?.some(size => !size.id) || colors?.some(color => !color.id)) await updatePatterns(sizeIDs, colorIDS)
+
+            return getProduct()
+        }
+
+        updateAll()
+            .then(data => res.status(200).json(data))
             .catch(err => {
                 if(err.message === 'name already be used') return res.status(409).json(`${err.name}: ${err.message}`)
-                if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
+                if(err.message === 'invalid product id') return res.status(404).json(`${err.name}: ${err.message}`)
+                if(err instanceof TypeError || err instanceof ReferenceError) return res.status(403).json(`${err.name}: ${err.message}`)
                 return res.status(500).json(err)
             })
 
@@ -709,11 +818,11 @@ const productController = {
 
         const { name } = req.query
 
-        Product.findOne({
+        Product.findAll({
             where: { name }
         })
             .then(data => {
-                if(!data) throw new ReferenceError('cannot find product')
+                if(data.length === 0) throw new ReferenceError('cannot find product')
                 return res.status(200).json(data)
             })
             .catch(err => {
@@ -739,6 +848,7 @@ const productController = {
         const updatePattern = async () => {
             const total = await getTotal()
             if(total === null) return Promise.reject(new ReferenceError('invalid pattern id'))
+            if(type !== 'INC' && type !== 'DEC') return Promise.reject(new ReferenceError(`invalid 'type' parameter`))
             const qty = type === 'INC' ? quantity : type === 'DEC' ? -quantity : null
             if(total + qty < 0) return Promise.reject(new RangeError('total will be negative'))
             return Pattern.update({
@@ -751,8 +861,8 @@ const productController = {
         updatePattern()
             .then(() => res.sendStatus(200))
             .catch(err => {
-                if(err instanceof RangeError) return res.status(403).json(`${err.name}: ${err.message}`)
-                if(err instanceof ReferenceError) return res.status(404).json(`${err.name}: ${err.message}`)
+                if(err.message === 'invalid pattern id') return res.status(404).json(`${err.name}: ${err.message}`)
+                if(err instanceof RangeError || err instanceof ReferenceError) return res.status(403).json(`${err.name}: ${err.message}`)
                 return res.status(500).json(err)
             })
     },
