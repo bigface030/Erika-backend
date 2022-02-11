@@ -88,6 +88,8 @@ const productController = {
             const Op = Sequelize.Op;
             const patterns = await getPatterns();
 
+            console.log(patterns)
+
             const Obj = {};
             if(_gender){
                 Obj.gender = _gender
@@ -101,8 +103,8 @@ const productController = {
                 }).then(data => data.id)
                 Obj.category_id = category_id
             }
-            if(_page && patterns.length > 0){
-                Obj.id = {[Op.or]: patterns}
+            if(_page){
+                Obj.id = patterns.length > 0 ? {[Op.or]: patterns} : []
             }
             if(_min && _max){
                 const onArr = {
