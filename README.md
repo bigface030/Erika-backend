@@ -1,7 +1,7 @@
 # Erika-backend
 
 #### ERiKA 電商服飾平台 後端原始碼
-> ### [ERiKA API 文件](https://hackmd.io/@TPdidilong/Hk2nowXk9)
+> ### [ERiKA API 文件](https://hackmd.io/@bigface030/HklAXkguF)
 
 ## 專案簡介
 採用 [Node.js](https://nodejs.org/en/) 的 web 框架 [Express](https://expressjs.com/) 建置 server，搭配 ORM 框架 [Sequelize](https://sequelize.org/) 操作 [MySQL](https://www.mysql.com/) 資料庫以建立 controllers 及 models，同時生成 API 與前端串連。
@@ -79,7 +79,7 @@
 
 透過 [Create React App](https://create-react-app.dev/) 建立開發環境，使用 [React](https://zh-hant.reactjs.org/) 開發 SPA (Single Page Application)，完成後將專案部署至 [GitHub Pages](https://pages.github.com/)。
 
-> #### 專案連結：https://github.com/TPdidilong/Erika-backend
+> #### 專案連結：https://github.com/bigface030/Erika
 
 ## 專案授權
 
